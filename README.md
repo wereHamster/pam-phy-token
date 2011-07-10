@@ -64,3 +64,25 @@ Require *both* and fail immediately if the physical token is not present:
     auth    requisite     pam_phy_token.so
     auth    required      pam_unix.so
 
+
+TODO
+----
+
+ - My original idea was to be able to set up multiple independent tokens. And
+   while the PAM module can handle multiple tokens, the binary helper can only
+   set up one at a time.
+
+
+References
+----------
+
+ - [pam_usb](http://pamusb.org/) was a great inspiration. The main difference
+   is that pam-phy-token doesn't depend on any external services to enumerate
+   or mount the volumes (hal, dbus).
+
+
+Author
+------
+
+Tomas "wereHamster" Carnecky <tomas.carnecky@gmail.com>
+
