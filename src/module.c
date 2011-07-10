@@ -58,6 +58,7 @@ out:
     if (fd >= 0)
         close(fd);
     umount(target);
+    rmdir(target);
 
     return ret;
 }
