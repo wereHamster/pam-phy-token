@@ -20,4 +20,3 @@ install: all
 
 clean:
 	rm -rf pam-phy-token module.so src/*.o
-

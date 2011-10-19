@@ -134,4 +134,3 @@ const char *uuidmount(struct pam_phy_module *module, const char *uuid)
      * unmount the filesystem. */
     return strdup(target);
 }
-

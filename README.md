@@ -85,4 +85,3 @@ Author
 ------
 
 Tomas "wereHamster" Carnecky <tomas.carnecky@gmail.com>
-
