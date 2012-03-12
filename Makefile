@@ -1,6 +1,6 @@
 
 CFLAGS = -Wall -std=c99 `pkg-config --cflags blkid`
-LIBS = `pkg-config --libs blkid`
+LIBS = `pkg-config --libs blkid uuid`
 
 all: pam-phy-token module.so
 
