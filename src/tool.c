@@ -95,10 +95,42 @@ static void sync(struct pam_phy_module *module, int argc, char *argv[])
     rmdir(target);
 }
 
+static void test(struct pam_phy_module *module, int argc, char *argv[])
+{
+    printf("Testing devices...\n");
+    for (int i = 0; i < module->count; ++i) {
+        const char *uuid = __uuid(module->device[i].uuid);
+        printf("  UUID=%s ", uuid);
+
+        const char *dev = blkid_evaluate_tag("UUID", uuid, &module->cache);
+        if (!dev) {
+            printf("could not find device\n");
+        } else {
+            printf("dev=%s ", dev);
+            if (!pam_phy_auth(module, &module->device[i])) {
+                time_t time = (time_t) module->device[i].token.time;
+                struct tm *tm = localtime(&time);
+                char timebuf[100];
+                strftime(timebuf, 100, "%F %T", tm);
+
+                printf("VALID (last used: %s)\n", timebuf);
+            } else {
+                printf("\n");
+            }
+        }
+    }
+}
+
+static int help(int argc, char *argv[])
+{
+    printf("%s [list|sync|test]\n", argv[0]);
+    return 1;
+}
+
 int main(int argc, char *argv[])
 {
     if (argc < 2)
-        return 0;
+        return help(argc, argv);
 
     struct passwd *pwd = getpwuid(getuid());
 
@@ -112,8 +144,10 @@ int main(int argc, char *argv[])
         list(&module, argc - 2, &argv[2]);
     } else if (strcmp(argv[1], "sync") == 0) {
         sync(&module, argc - 2, &argv[2]); 
+    } else if (strcmp(argv[1], "test") == 0) {
+        test(&module, argc - 2, &argv[2]);
     } else {
-        printf("%s [list|sync]\n", argv[0]);
+        help(argc, argv);
     }
 
     pam_phy_module_cleanup(&module);

@@ -83,6 +83,54 @@ int pam_phy_module_init(struct pam_phy_module *module, const char *user)
     return 0;
 }
 
+int pam_phy_auth(struct pam_phy_module *module, struct pam_phy_device *device)
+{
+    /* Try to mount the device by its UUID. */
+    const char *target = uuidmount(module, __uuid(device->uuid));
+    if (!target)
+        return 1;
+
+    /* This is where the token is stored. */
+    char path[1024];
+    snprintf(path, 1024, "%s/.pam-phy-token/%s@%s", target, module->user, module->node);
+
+    /* Open the file in read-write mode, because we'll eventually have to
+     * update it. */
+    int ret = 1, fd = open(path, O_RDWR);
+    if (fd >= 0) {
+        /* Read the token. */
+        struct token token;
+        if (read(fd, &token, sizeof(token)) != sizeof(token))
+            goto out;
+
+        /* Compare the token with what is on the host. */
+        ret = memcmp(&token, &device->token, sizeof(token));
+
+        /* If the tokens are equal generate a new token. */
+        if (!ret) {
+            /* Rewind the file descriptor and truncate the file. */
+            lseek(fd, SEEK_SET, 0);
+            ftruncate(fd, sizeof(token));
+
+            /* Generate the token. */
+            mktoken(&token);
+
+            /* Write the file to the device and update the token on the host. */
+            if (write(fd, &token, sizeof(token)) == sizeof(token) && !fsync(fd))
+                memcpy(&module->device[0].token, &token, sizeof(token));
+        }
+    }
+
+out:
+    /* The usual cleanup. */
+    if (fd >= 0)
+        close(fd);
+    umount(target);
+    rmdir(target);
+
+    return ret;
+}
+
 /* Cleanup all that stuff. */
 void pam_phy_module_cleanup(struct pam_phy_module *module)
 {

@@ -42,6 +42,7 @@ struct pam_phy_module {
 /* Functions used in both the PAM module and the helper to initialize and
  * cleanup the internal data structures. */
 int pam_phy_module_init(struct pam_phy_module *module, const char *user);
+int pam_phy_auth(struct pam_phy_module *module, struct pam_phy_device *device);
 void pam_phy_module_cleanup(struct pam_phy_module *module);
 
 
